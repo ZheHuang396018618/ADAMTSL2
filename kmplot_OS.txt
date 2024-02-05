@@ -1,0 +1,50 @@
+library(survival)
+library(survminer)
+library(ggplot2)
+head(data)
+#   event time    value group
+# 1     0  475 5.375884  High
+# 2     0  146 2.639047  High
+# 3     0  385 1.540970   Low
+# 4     1   49 2.462105   Low
+# 5     1  290 2.855910  High
+# 6     0 1200 2.610133  High
+fit <- survfit(Surv(time, event) ~ group, data = data)
+print(fit)
+# Call: survfit(formula = survival::Surv(time, event) ~ group, data = dat)
+# 
+#              n events median 0.95LCL 0.95UCL
+# group=Low  322     53   3042    2532      NA
+# group=High 321     76   1741    1566      NA
+# coxph
+fit_cox <- coxph(Surv(time, event) ~ group, data = data)
+print(fit_cox)
+# Call:
+# survival::coxph(formula = survival::Surv(time, event) ~ group, 
+#     data = dat)
+# 
+#   n= 643, number of events= 129 
+# 
+#             coef exp(coef) se(coef)     z Pr(>|z|)   
+# groupHigh 0.5148    1.6733   0.1799 2.862   0.0042 **
+# ---
+# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+# 
+#           exp(coef) exp(-coef) lower .95 upper .95
+# groupHigh     1.673     0.5976     1.176     2.381
+# 
+# Concordance= 0.562  (se = 0.025 )
+# Likelihood ratio test= 8.36  on 1 df,   p=0.004
+# Wald test            = 8.19  on 1 df,   p=0.004
+# Score (logrank) test = 8.37  on 1 df,   p=0.004
+# 
+cox.zph(fit_cox)
+#         chisq df    p
+# group  0.0418  1 0.84
+# GLOBAL 0.0418  1 0.84
+## plot
+ggsurvplot(fit = fit, data = data, fun = "pct",
+           palette = c("#4DBBD5", "#E64B35", "#BEBADA", "#FFFFB3", "#8DD3C7"),
+           linetype = 1, pval = TRUE, 
+           censor = TRUE, censor.size = 7,
+           risk.table = FALSE, conf.int = FALSE)
